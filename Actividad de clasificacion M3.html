@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actividad: Clasificación de Instrumentos de Evaluación</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f9fafb;
+        }
+        .instrument-card {
+            cursor: grab;
+            transition: all 0.2s ease-in-out;
+            user-select: none;
+        }
+        .instrument-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .instrument-card.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+            cursor: grabbing;
+        }
+        .drop-zone {
+            transition: all 0.2s ease-in-out;
+            border: 2px dashed #d1d5db; /* gray-300 */
+        }
+        .drop-zone.hover-over {
+            border-color: #3b82f6; /* blue-500 */
+            background-color: #eff6ff; /* blue-50 */
+        }
+        .drop-zone.correct-drop {
+            border-color: #22c55e; /* green-500 */
+            background-color: #f0fdf4; /* green-50 */
+        }
+        .drop-zone.incorrect-drop {
+            border-color: #ef4444; /* red-500 */
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        #completion-message {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="max-w-7xl mx-auto p-6 md:p-8">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Actividad: Elige la Herramienta Correcta</h1>
+            <p class="mt-3 text-lg text-gray-600">Arrastra cada instrumento de evaluación al escenario donde crees que es más adecuado.</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Columna de Escenarios (Drop Zones) -->
+            <div id="scenarios-container" class="md:col-span-2 space-y-6">
+                <!-- Escenario 1 -->
+                <div class="scenario-card bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="font-bold text-lg mb-2">1. Evaluar un borrador de proyecto de investigación</h3>
+                    <p class="text-sm text-gray-600 mb-4">El objetivo es dar feedback detallado para que el estudiante pueda mejorar significativamente su trabajo antes de la entrega final.</p>
+                    <div class="drop-zone min-h-[100px] p-4 rounded-lg flex items-center justify-center" data-correct-instrument="instrument-analytic">
+                        <span class="text-gray-400 italic">Arrastra el instrumento aquí</span>
+                    </div>
+                </div>
+                <!-- Escenario 2 -->
+                <div class="scenario-card bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="font-bold text-lg mb-2">2. Calificar una presentación oral final</h3>
+                    <p class="text-sm text-gray-600 mb-4">Se necesita una calificación global rápida que capture la calidad general de la presentación (fluidez, contenido, claridad) en el momento.</p>
+                     <div class="drop-zone min-h-[100px] p-4 rounded-lg flex items-center justify-center" data-correct-instrument="instrument-holistic">
+                        <span class="text-gray-400 italic">Arrastra el instrumento aquí</span>
+                    </div>
+                </div>
+                 <!-- Escenario 3 -->
+                <div class="scenario-card bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="font-bold text-lg mb-2">3. Verificar el cumplimiento del formato APA 7ma Edición</h3>
+                    <p class="text-sm text-gray-600 mb-4">La tarea es puramente de verificación: ¿la portada tiene los elementos correctos? ¿las citas están bien formateadas? Es una evaluación de sí/no.</p>
+                     <div class="drop-zone min-h-[100px] p-4 rounded-lg flex items-center justify-center" data-correct-instrument="instrument-checklist">
+                        <span class="text-gray-400 italic">Arrastra el instrumento aquí</span>
+                    </div>
+                </div>
+                 <!-- Escenario 4 -->
+                <div class="scenario-card bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="font-bold text-lg mb-2">4. Dar una nota rápida a un póster en una feria de ciencias</h3>
+                    <p class="text-sm text-gray-600 mb-4">Hay muchos pósters que evaluar en poco tiempo. Se requiere una impresión general de su impacto visual, claridad y contenido.</p>
+                     <div class="drop-zone min-h-[100px] p-4 rounded-lg flex items-center justify-center" data-correct-instrument="instrument-holistic">
+                        <span class="text-gray-400 italic">Arrastra el instrumento aquí</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna de Instrumentos (Draggable Items) -->
+            <div id="instruments-container" class="md:col-span-1 space-y-4">
+                <div id="instrument-analytic" class="instrument-card bg-blue-100 p-4 rounded-lg shadow-sm border border-blue-300" draggable="true">
+                    <h4 class="font-bold text-blue-800">Rúbrica Analítica</h4>
+                    <p class="text-sm text-blue-700">Evalúa criterios por separado. Ideal para feedback detallado.</p>
+                </div>
+                <div id="instrument-holistic-1" class="instrument-card bg-amber-100 p-4 rounded-lg shadow-sm border border-amber-300" draggable="true" data-instrument-type="instrument-holistic">
+                    <h4 class="font-bold text-amber-800">Rúbrica Holística</h4>
+                    <p class="text-sm text-amber-700">Da una impresión general del trabajo. Ideal para calificaciones rápidas.</p>
+                </div>
+                 <div id="instrument-checklist" class="instrument-card bg-green-100 p-4 rounded-lg shadow-sm border border-green-300" draggable="true">
+                    <h4 class="font-bold text-green-800">Lista de Cotejo</h4>
+                    <p class="text-sm text-green-700">Verifica la presencia o ausencia de elementos. Ideal para tareas de formato.</p>
+                </div>
+                <div id="instrument-holistic-2" class="instrument-card bg-amber-100 p-4 rounded-lg shadow-sm border border-amber-300" draggable="true" data-instrument-type="instrument-holistic">
+                    <h4 class="font-bold text-amber-800">Rúbrica Holística</h4>
+                    <p class="text-sm text-amber-700">Da una impresión general del trabajo. Ideal para calificaciones rápidas.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="completion-message" class="mt-10 text-center" style="display: none;">
+            <div class="inline-block bg-green-100 text-green-800 p-6 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold">¡Felicitaciones, has completado la actividad!</h2>
+                <p class="mt-2">Has demostrado una excelente comprensión de cuándo utilizar cada instrumento de evaluación.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const instrumentCards = document.querySelectorAll('.instrument-card');
+            const dropZones = document.querySelectorAll('.drop-zone');
+            
+            let draggedItem = null;
+            let correctDrops = 0;
+
+            instrumentCards.forEach(card => {
+                card.addEventListener('dragstart', (e) => {
+                    draggedItem = e.target;
+                    setTimeout(() => e.target.classList.add('dragging'), 0);
+                    // Usamos un data-attribute para el tipo de instrumento holístico
+                    const instrumentType = e.target.dataset.instrumentType || e.target.id;
+                    e.dataTransfer.setData('text/plain', instrumentType);
+                    e.dataTransfer.setData('text/id', e.target.id);
+                });
+
+                card.addEventListener('dragend', (e) => {
+                    e.target.classList.remove('dragging');
+                });
+            });
+
+            dropZones.forEach(zone => {
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (!zone.hasChildNodes() || zone.querySelector('.italic')) {
+                         zone.classList.add('hover-over');
+                    }
+                });
+
+                zone.addEventListener('dragleave', (e) => {
+                    zone.classList.remove('hover-over');
+                });
+
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('hover-over');
+
+                    if (zone.hasChildNodes() && !zone.querySelector('.italic')) return; // Ya tiene un instrumento
+
+                    const instrumentType = e.dataTransfer.getData('text/plain');
+                    const correctType = zone.dataset.correctInstrument;
+
+                    if (instrumentType === correctType) {
+                        const instrumentId = e.dataTransfer.getData('text/id');
+                        const droppedElement = document.getElementById(instrumentId);
+                        
+                        // Solo permite soltar si el elemento no ha sido usado
+                        if(droppedElement.draggable) {
+                            zone.innerHTML = ''; // Limpiar el texto "Arrastra aquí"
+                            zone.appendChild(droppedElement);
+                            zone.classList.add('correct-drop');
+                            droppedElement.draggable = false;
+                            droppedElement.style.cursor = 'default';
+                            droppedElement.style.transform = 'none';
+
+                            correctDrops++;
+                            if (correctDrops === 4) {
+                                document.getElementById('completion-message').style.display = 'block';
+                            }
+                        }
+                    } else {
+                        zone.classList.add('incorrect-drop');
+                        setTimeout(() => zone.classList.remove('incorrect-drop'), 500);
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
